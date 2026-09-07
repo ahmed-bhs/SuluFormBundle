@@ -25,11 +25,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * Builds a dynamic form.
  */
-class Builder implements BuilderInterface
+class Builder implements BuilderInterface, ResetInterface
 {
     /**
      * @var FormInterface[]
@@ -145,6 +146,23 @@ class Builder implements BuilderInterface
         return null;
     }
 
+    /**
+     * Drops the cache of already built forms.
+     *
+     * The cached forms have been through handleRequest(), so they carry the
+     * data submitted by whoever triggered the build. On a persistent runtime
+     * -- FrankenPHP worker mode, RoadRunner, Swoole -- this service outlives
+     * the request, and without this reset the next visitor would be served
+     * the previous visitor's form, already filled in.
+     */
+    public function reset(): void
+    {
+        $this->cache = [];
+    }
+
+    /**
+     * @return FormInterface<mixed>|null
+     */
     public function build(int $id, string $type, string $typeId, ?string $locale = null, string $name = 'form'): ?FormInterface
     {
         $request = $this->requestStack->getCurrentRequest();
