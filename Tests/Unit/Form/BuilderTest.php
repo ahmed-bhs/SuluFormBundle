@@ -73,6 +73,7 @@ class BuilderTest extends TestCase
     private function writeCache(Builder $builder, array $forms): void
     {
         $property = new \ReflectionProperty(Builder::class, 'cache');
+        $property->setAccessible(true);
         $property->setValue($builder, $forms);
     }
 
@@ -82,6 +83,7 @@ class BuilderTest extends TestCase
     private function readCache(Builder $builder): array
     {
         $property = new \ReflectionProperty(Builder::class, 'cache');
+        $property->setAccessible(true);
         $cache = $property->getValue($builder);
 
         return \is_array($cache) ? $cache : [];
